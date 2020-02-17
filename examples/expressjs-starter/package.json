@@ -1,0 +1,26 @@
+{
+  "name": "dynojax",
+  "version": "1.0.0",
+  "description": "Dynamic component loader for Single Page Applications",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Digital-512/dynojax.git"
+  },
+  "keywords": [
+    "dynojax"
+  ],
+  "author": "Digital-512",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Digital-512/dynojax/issues"
+  },
+  "homepage": "https://github.com/Digital-512/dynojax#readme",
+  "dependencies": {
+    "ejs": "^3.0.1",
+    "express": "^4.17.1"
+  }
+}

@@ -1,0 +1,52 @@
+html,
+body {
+    margin: 0;
+    font-family: "Helvetica", "Arial", sans-serif;
+}
+.header {
+    background-color: #65617d;
+    padding: 30px 0;
+    color: #fff;
+    display: flex;
+    justify-content: center;
+}
+.header > div {
+    width: 100%;
+    max-width: 1000px;
+    padding: 0 30px;
+}
+main,
+footer {
+    display: flex;
+    justify-content: center;
+}
+footer > .content {
+    background-color: #e8eaf2;
+    margin: 30px 0;
+}
+.content {
+    padding: 30px;
+    width: 100%;
+    max-width: 1000px;
+}
+.content > p {
+    line-height: 30px;
+}
+.content > img {
+    width: 400px;
+}
+.content > div {
+    margin: 15px 0;
+}
+
+/* NProgress custom style */
+#nprogress .bar {
+    background: #e8eaf2 !important;
+}
+#nprogress .peg {
+    box-shadow: 0 0 10px #e8eaf2, 0 0 5px #e8eaf2 !important;
+}
+#nprogress .spinner-icon {
+    border-top-color: #e8eaf2 !important;
+    border-left-color: #e8eaf2 !important;
+}

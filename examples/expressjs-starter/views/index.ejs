@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="/style.css">
+
+    <title>Home | Dynojax Example Starter</title>
+
+    <!-- jQuery is required -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+
+    <!-- There is the main Dynojax script -->
+    <script src="/dynojax.js"></script>
+
+    <!-- Optional NProgress -->
+    <link rel="stylesheet" type="text/css" href="https://unpkg.com/nprogress@0.2.0/nprogress.css">
+    <script src="https://unpkg.com/nprogress@0.2.0/nprogress.js"></script>
+</head>
+
+<body>
+    <div class="header">
+        <div>
+            <h1>Dynojax Example Starter</h1>
+        </div>
+    </div>
+    <!-- Add class `dynojax-<component>` to assign it as component container -->
+    <main class="dynojax-root">
+        <%- include(module) %>
+    </main>
+    <footer>
+        <div class="content">
+            <p>&copy; 2020, Built with <a href="https://github.com/Digital-512/dynojax">Dynojax</a></p>
+        </div>
+    </footer>
+    <script>
+        // NProgress integration
+        $(document).on('dynojax:start', function () { NProgress.start(); });
+        $(document).on('dynojax:end', function () { NProgress.done(); });
+    </script>
+</body>
+
+</html>
