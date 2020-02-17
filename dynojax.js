@@ -4,6 +4,12 @@ var Dynojax = (function () {
     var publicAPI = {}
 
     publicAPI.load = function (component, page) {
+        // Change location if Dynojax is unsupported.
+        if (!publicAPI.supportDynojax) {
+            location.href = page;
+            return;
+        }
+
         // Replace current state to make components work with back/forward buttons.
         history.replaceState({
             component,
@@ -94,6 +100,11 @@ var Dynojax = (function () {
         });
     }
 
+    // Is Dynojax supported by this browser?
+    publicAPI.supportDynojax = window.history && window.history.pushState &&
+        // pushState isn't reliable on iOS until 5.
+        !(/((iPod|iPhone|iPad).+\bOS\s+[1-4]\D|WebApps\/.+CFNetwork)/).test(navigator.userAgent);
+
     return publicAPI;
 })();
 
@@ -107,6 +118,10 @@ $(function () {
 
         // Ignore event with default prevented.
         if (evt.isDefaultPrevented())
+            return;
+
+        // Ignore if Dynojax is unsupported.
+        if (!Dynojax.supportDynojax)
             return;
 
         // Prevent default behaviour and load component.
