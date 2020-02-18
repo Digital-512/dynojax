@@ -3,7 +3,18 @@
 var Dynojax = (function () {
     var publicAPI = {}
 
-    publicAPI.load = function (component, page) {
+    publicAPI.load = function (component, page, options) {
+        // Default values for options
+        var _options = {
+            resetScroll: true,
+            animations: true,
+            fadeIn: 'fast',
+            fadeOut: 'fast'
+        }
+
+        // Merge options into default options
+        $.extend(_options, options);
+
         // Change location if Dynojax is unsupported.
         if (!publicAPI.supportDynojax) {
             location.href = page;
@@ -19,7 +30,8 @@ var Dynojax = (function () {
             }
         }, document.title);
 
-        hideComponent(component, 'fast');
+        if (_options.animations)
+            hideComponent(component, _options.fadeOut);
 
         // Trigger an event `dynojax:start`.
         // Useful for progress bars.
@@ -37,7 +49,7 @@ var Dynojax = (function () {
             $('.dynojax-' + component).html(data);
 
             // Get the title of a component from the server.
-            var title = xhr.getResponseHeader('X-DYNOJAX-TITLE');
+            var title = _options.title || xhr.getResponseHeader('X-DYNOJAX-TITLE');
 
             // Create a new history state for opened component.
             history.pushState({
@@ -52,17 +64,30 @@ var Dynojax = (function () {
             document.title = title;
 
             // Reset scroll position.
-            window.scrollTo(0, 0);
+            if (_options.resetScroll)
+                window.scrollTo(0, 0);
 
-            showComponent(component, 'fast');
+            if (_options.animations)
+                showComponent(component, _options.fadeIn);
 
             // Trigger an event `dynojax:end`.
             $(document).trigger('dynojax:end');
         });
     }
 
-    publicAPI.loadWidget = function (component, page) {
-        hideComponent(component, 'fast');
+    publicAPI.loadWidget = function (component, page, options) {
+        // Default values for options
+        var _options = {
+            animations: true,
+            fadeIn: 'fast',
+            fadeOut: 'fast'
+        }
+
+        // Merge options into default options
+        $.extend(_options, options);
+
+        if (_options.animations)
+            hideComponent(component, _options.fadeOut);
 
         // Trigger an event `dynojax-widget:start`.
         // Useful for progress bars.
@@ -79,7 +104,8 @@ var Dynojax = (function () {
             // Include component's data to its container.
             $('.dynojax-' + component).html(data);
 
-            showComponent(component, 'fast');
+            if (_options.animations)
+                showComponent(component, _options.fadeIn);
 
             // Trigger an event `dynojax-widget:end`.
             $(document).trigger('dynojax-widget:end');
