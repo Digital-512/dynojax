@@ -19,7 +19,7 @@ var Dynojax = (function () {
             }
         }, document.title);
 
-        hideComponent(component, 0);
+        hideComponent(component, 'fast');
 
         // Trigger an event `dynojax:start`.
         // Useful for progress bars.
@@ -62,7 +62,7 @@ var Dynojax = (function () {
     }
 
     publicAPI.loadWidget = function (component, page) {
-        hideComponent(component, 0);
+        hideComponent(component, 'fast');
 
         // Trigger an event `dynojax-widget:start`.
         // Useful for progress bars.
@@ -86,16 +86,16 @@ var Dynojax = (function () {
         });
     }
 
-    // Hide current component in ms (default 0) milliseconds.
-    var hideComponent = function (component, ms = 0) {
+    // Hide current component in ms milliseconds.
+    var hideComponent = function (component, ms) {
         $('.dynojax-' + component).animate({ opacity: 0 }, ms, function () {
             $(this).css('visibility', 'hidden');
         });
     }
 
-    // Show the new component in ms (default 'fast') milliseconds.
-    var showComponent = function (component, ms = 'fast') {
-        $('.dynojax-' + component).css('visibility', '').animate({ opacity: 1 }, ms, function () {
+    // Show the new component in ms milliseconds.
+    var showComponent = function (component, ms) {
+        $('.dynojax-' + component).finish().css('visibility', '').animate({ opacity: 1 }, ms, function () {
             $(this).css('opacity', '');
         });
     }
