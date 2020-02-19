@@ -89,9 +89,9 @@ var Dynojax = (function () {
         if (_options.animations)
             hideComponent(component, _options.fadeOut);
 
-        // Trigger an event `dynojax-widget:start`.
+        // Trigger an event `dynojax:widget-start`.
         // Useful for progress bars.
-        $(document).trigger('dynojax-widget:start');
+        $(document).trigger('dynojax:widget-start');
 
         // Send GET request to server.
         // Sends a header `X-DYNOJAX-RENDER` to the server, so
@@ -107,8 +107,8 @@ var Dynojax = (function () {
             if (_options.animations)
                 showComponent(component, _options.fadeIn);
 
-            // Trigger an event `dynojax-widget:end`.
-            $(document).trigger('dynojax-widget:end');
+            // Trigger an event `dynojax:widget-end`.
+            $(document).trigger('dynojax:widget-end');
         });
     }
 
@@ -161,6 +161,9 @@ $(function () {
         if (!evt.state.component)
             return;
 
+        // Trigger an event `dynojax:popstate-start`.
+        $(document).trigger('dynojax:popstate-start');
+
         // Send GET request to server.
         $.ajax({
             method: 'GET',
@@ -172,6 +175,9 @@ $(function () {
 
             // Set the last scroll position of the component.
             window.scrollTo(evt.state.scroll.x, evt.state.scroll.y);
+
+            // Trigger an event `dynojax:popstate-end`.
+            $(document).trigger('dynojax:popstate-end');
         });
     }
 });
