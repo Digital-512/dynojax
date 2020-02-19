@@ -91,11 +91,11 @@ It is sometimes useful to disable Dynojax for debugging on a modern browser:
 Dynojax.supportDynojax = false;
 ```
 
-### Reinitializing plugins/widget on new page content
+### Reinitializing plugins on new page content
 The whole point of Dynojax is that it fetches and inserts new content _without_ refreshing the page. However, other jQuery plugins or libraries that are set to react on page loaded event (such as `DOMContentLoaded`) will not pick up on these changes. Therefore, it's usually a good idea to configure these plugins to reinitialize in the scope of the updated page content. This can be done like so:
 
 ```js
-$(document).on('ready dynojax:end', function(event) {
+$(document).on('ready dynojax:end dynojax:popstate-end', function(event) {
   $(event.target).initializeMyPlugin();
 });
 ```
