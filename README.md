@@ -17,6 +17,7 @@ Add `dynojax.min.js` to your project.
 
 ## Usage
 
+### Loading components (for full page loads with pushState)
 The simplest and the most common use of Dynojax looks like this:
 
 ```html
@@ -26,12 +27,30 @@ The simplest and the most common use of Dynojax looks like this:
 
 This will load the content of "/page2" into a container `.dynojax-container` on link click.
 
-In this example `container` means the container, into which the page should be loaded. It can be named differently. Having multiple containers is also supported.
+In this example `container` means the container, into which the page should be loaded. It can be named differently (for example, `class="dynojax-main"`, then the link will use attribute `data-dynojax="main"`). Having multiple containers (components) is also supported.
 
 > <b>NOTE: </b>It will not load anything to the container on the first page load. This is the server's responsibility to load the initial page. See `examples/expressjs-starter` for an example which shows how to use EJS templating engine to load pages from the server.
 
+### Loading widgets (no pushState)
+You can also load a component as widget wihout using pushState function. It allows to load or update any part of the page without reloading it. There is an example:
+
+```html
+<div class="dynojax-widget"></div>
+<button onclick="reload()">Reload online users!</button>
+```
+```js
+function reload() {
+  // load online users into `.dynojax-widget`
+  Dynojax.loadWidget('widget','/modules/online_users');
+}
+```
+
+In this example clicking button `Reload online users!` will update the online users container to show the latest information. Having multiple widgets is supported. See an example `examples/dynojax-widgets` to see how it is implemented.
+
+> <b>NOTE: </b>It is not necessary for server to send `X-DYNOJAX-TITLE` header when loading widgets. It should only send the HTML to render content of a container.
+
 ### The server should:
-* Send a title header `X-DYNOJAX-TITLE` with the title of the page, for example:
+* Send a title header `X-DYNOJAX-TITLE` with the title of the page (not required for widgets, as stated above), for example:
 
 ```js
 res.setHeader('X-DYNOJAX-TITLE', 'Page 2 | Dynojax Example Starter');
@@ -39,10 +58,109 @@ res.setHeader('X-DYNOJAX-TITLE', 'Page 2 | Dynojax Example Starter');
 
 > <b>NOTE: </b>You can override this behaviour from the client using the option `{ title: "Custom title" }`. Then it does not need the server to send `X-DYNOJAX-TITLE` header.
 
-* Determine if the client sent a header `X-DYNOJAX-RENDER`. If so, then the server should send only the part of the page, if not, then the server should send full index page. For example:
+* Determine if the client sent a header `X-DYNOJAX-RENDER`. If so, then the server should only render the HTML meant to replace the contents of the container element (`.dynojax-container` in our example) without the rest of the page layout. Here is an example of how this might be done in Express.js using template engine:
 
 ```js
 res.render((req.header('X-DYNOJAX-RENDER')) ? 'page2' : 'index', { module: 'page2' });
 ```
 
-See an example `examples/expressjs-starter` for more information.
+See an example `examples/expressjs-starter` for better understanding.
+
+## Advanced usage
+
+You can also call Dynojax functions from JavaScript and/or override the default behaviour of links and set options.
+
+```js
+Dynojax.load(component, page, [options]);
+```
+```js
+Dynojax.loadWidget(component, page, [options]);
+```
+
+You can check if the browser supports Dynojax with supportDynojax (bool).
+
+```js
+if(Dynojax.supportDynojax) {
+  // do something here...
+}
+```
+
+It is sometimes useful to disable Dynojax for debugging on a modern browser:
+
+```js
+Dynojax.supportDynojax = false;
+```
+
+## Options
+
+Sometimes you might need to change the behaviour of this plugin.
+
+### Default options
+
+For `Dynojax.load()`
+
+```js
+var _options = {
+  title: undefined, // Overrides a title sent from the server
+  resetScroll: true, // Should we reset the scroll to its initial position on switching page?
+  animations: true, // Should we see animations while switching pages?
+  fadeIn: 'fast', // The time in milliseconds, 'fast' or 'slow'. How long the fadeIn animation should take?
+  fadeOut: 'fast' // The time in milliseconds, 'fast' or 'slow'. How long the fadeOut animation should take?
+}
+```
+
+For `Dynojax.loadWidget()`
+
+```js
+var _options = {
+  animations: true, // Should we see animations while reloading widgets?
+  fadeIn: 'fast', // The time in milliseconds, 'fast' or 'slow'. How long the fadeIn animation should take?
+  fadeOut: 'fast' // The time in milliseconds, 'fast' or 'slow'. How long the fadeOut animation should take?
+}
+```
+
+## Events
+
+Useful if you want to integrate progress bars, for example, [NProgress](https://github.com/rstacruz/nprogress).
+
+<table>
+  <tr>
+    <th>Event</th>
+    <th>Notes</th>
+  </tr>
+  <tr>
+    <td><code>dynojax:start</code></td>
+    <td>Starts to load a component (with pushState).</td>
+  </tr>
+  <tr>
+    <td><code>dynojax:end</code></td>
+    <td>Ends to load a component (with pushState).</td>
+  </tr>
+  <tr>
+    <td><code>dynojax:widget-start</code></td>
+    <td>Starts to load a widget (without pushState).</td>
+  </tr>
+  <tr>
+    <td><code>dynojax:widget-end</code></td>
+    <td>Ends to load a widget (without pushState).</td>
+  </tr>
+  <tr>
+    <td><code>dynojax:popstate-start</code></td>
+    <td>Starts to load a component (back/forward).</td>
+  </tr>
+  <tr>
+    <td><code>dynojax:popstate-end</code></td>
+    <td>Ends to load a component (back/forward).</td>
+  </tr>
+</table>
+
+An example for integrating with NProgress:
+
+```js
+$(document).on('dynojax:start', function () {
+  NProgress.start();
+});
+$(document).on('dynojax:end', function () {
+  NProgress.done();
+});
+```
