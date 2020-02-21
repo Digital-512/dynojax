@@ -114,6 +114,7 @@ For `Dynojax.load()`
 var _options = {
   title: undefined, // Overrides a title sent from the server
   resetScroll: true, // Should we reset the scroll to its initial position on switching page?
+  reloadOnError: true, // Should we hard reload the page if AJAX request fails?
   animations: true, // Should we see animations while switching pages?
   fadeIn: 'fast', // The time in milliseconds, 'fast' or 'slow'. How long the fadeIn animation should take?
   fadeOut: 'fast' // The time in milliseconds, 'fast' or 'slow'. How long the fadeOut animation should take?
@@ -138,30 +139,50 @@ Useful if you want to integrate progress bars, for example, [NProgress](https://
   <tr>
     <th>Event</th>
     <th>Notes</th>
+    <th>Type</th>
+    <th>Parameters</th>
   </tr>
   <tr>
     <td><code>dynojax:start</code></td>
-    <td>Starts to load a component (with pushState).</td>
+    <td>Starts to load a component</td>
+    <td>With pushState</td>
+    <td>[component, page]</td>
   </tr>
   <tr>
     <td><code>dynojax:end</code></td>
-    <td>Ends to load a component (with pushState).</td>
+    <td>Ends to load a component</td>
+    <td>With pushState</td>
+    <td>[component, page, status, xhr]</td>
   </tr>
   <tr>
     <td><code>dynojax:widget-start</code></td>
-    <td>Starts to load a widget (without pushState).</td>
+    <td>Starts to load a widget</td>
+    <td>Without pushState</td>
+    <td>[component, page]</td>
   </tr>
   <tr>
     <td><code>dynojax:widget-end</code></td>
-    <td>Ends to load a widget (without pushState).</td>
+    <td>Ends to load a widget</td>
+    <td>Without pushState</td>
+    <td>[component, page, status, xhr]</td>
   </tr>
   <tr>
     <td><code>dynojax:popstate-start</code></td>
-    <td>Starts to load a component (back/forward).</td>
+    <td>Starts to load a component</td>
+    <td>Back/Forward</td>
+    <td>[component, page]</td>
   </tr>
   <tr>
     <td><code>dynojax:popstate-end</code></td>
-    <td>Ends to load a component (back/forward).</td>
+    <td>Ends to load a component</td>
+    <td>Back/Forward</td>
+    <td>[component, page]</td>
+  </tr>
+  <tr>
+    <td><code>dynojax:error</code></td>
+    <td>AJAX error occurred or got error response.</td>
+    <td>All</td>
+    <td>[component, page, status, xhr]</td>
   </tr>
 </table>
 
