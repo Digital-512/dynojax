@@ -7,6 +7,7 @@ var Dynojax = (function () {
         // Default values for options
         var _options = {
             resetScroll: true,
+            reloadOnError: true,
             animations: true,
             fadeIn: 'fast',
             fadeOut: 'fast'
@@ -17,7 +18,7 @@ var Dynojax = (function () {
 
         // Change location if Dynojax is unsupported.
         if (!publicAPI.supportDynojax) {
-            location.href = page;
+            window.location.href = page;
             return;
         }
 
@@ -35,13 +36,14 @@ var Dynojax = (function () {
 
         // Trigger an event `dynojax:start`.
         // Useful for progress bars.
-        $(document).trigger('dynojax:start');
+        $(document).trigger('dynojax:start', [component, page]);
 
         // Send GET request to server.
         // Sends a header `X-DYNOJAX-RENDER` to the server, so
         // the server knows if a component is requested.
         $.ajax({
             method: 'GET',
+            cache: false,
             headers: { 'X-DYNOJAX-RENDER': true },
             url: page
         }).done(function (data, status, xhr) {
@@ -71,7 +73,14 @@ var Dynojax = (function () {
                 showComponent(component, _options.fadeIn);
 
             // Trigger an event `dynojax:end`.
-            $(document).trigger('dynojax:end');
+            $(document).trigger('dynojax:end', [component, page, status, xhr]);
+        }).fail(function (xhr, status) {
+            // Trigger an event `dynojax:error`.
+            $(document).trigger('dynojax:error', [component, page, status, xhr]);
+
+            // Reload the page if got error response.
+            if (_options.reloadOnError)
+                window.location.href = page;
         });
     }
 
@@ -91,13 +100,14 @@ var Dynojax = (function () {
 
         // Trigger an event `dynojax:widget-start`.
         // Useful for progress bars.
-        $(document).trigger('dynojax:widget-start');
+        $(document).trigger('dynojax:widget-start', [component, page]);
 
         // Send GET request to server.
         // Sends a header `X-DYNOJAX-RENDER` to the server, so
         // the server knows if a component is requested.
         $.ajax({
             method: 'GET',
+            cache: false,
             headers: { 'X-DYNOJAX-RENDER': true },
             url: page
         }).done(function (data) {
@@ -108,7 +118,10 @@ var Dynojax = (function () {
                 showComponent(component, _options.fadeIn);
 
             // Trigger an event `dynojax:widget-end`.
-            $(document).trigger('dynojax:widget-end');
+            $(document).trigger('dynojax:widget-end', [component, page, status, xhr]);
+        }).fail(function (xhr, status) {
+            // Trigger an event `dynojax:error`.
+            $(document).trigger('dynojax:error', [component, page, status, xhr]);
         });
     }
 
@@ -162,11 +175,12 @@ $(function () {
             return;
 
         // Trigger an event `dynojax:popstate-start`.
-        $(document).trigger('dynojax:popstate-start');
+        $(document).trigger('dynojax:popstate-start', [evt.state.component, document.location]);
 
         // Send GET request to server.
         $.ajax({
             method: 'GET',
+            cache: false,
             headers: { 'X-DYNOJAX-RENDER': true },
             url: document.location
         }).done(function (data) {
@@ -177,7 +191,10 @@ $(function () {
             window.scrollTo(evt.state.scroll.x, evt.state.scroll.y);
 
             // Trigger an event `dynojax:popstate-end`.
-            $(document).trigger('dynojax:popstate-end');
+            $(document).trigger('dynojax:popstate-end', [evt.state.component, document.location]);
+        }).fail(function (xhr, status) {
+            // Trigger an event `dynojax:error`.
+            $(document).trigger('dynojax:error', [evt.state.component, document.location, status, xhr]);
         });
     }
 });
