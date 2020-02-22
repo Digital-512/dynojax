@@ -24,7 +24,8 @@ var Dynojax = (function () {
 
         // Replace current state to make components work with back/forward buttons.
         history.replaceState({
-            component,
+            component: component,
+            options: _options,
             scroll: {
                 x: window.pageXOffset,
                 y: window.pageYOffset
@@ -32,7 +33,7 @@ var Dynojax = (function () {
         }, document.title);
 
         if (_options.animations)
-            hideComponent(component, _options.fadeOut);
+            publicAPI.hideComponent(component, _options.fadeOut);
 
         // Trigger an event `dynojax:start`.
         // Useful for progress bars.
@@ -55,7 +56,8 @@ var Dynojax = (function () {
 
             // Create a new history state for opened component.
             history.pushState({
-                component,
+                component: component,
+                options: _options,
                 scroll: {
                     x: 0,
                     y: 0
@@ -70,7 +72,7 @@ var Dynojax = (function () {
                 window.scrollTo(0, 0);
 
             if (_options.animations)
-                showComponent(component, _options.fadeIn);
+                publicAPI.showComponent(component, _options.fadeIn);
 
             // Trigger an event `dynojax:end`.
             $(document).trigger('dynojax:end', [component, page, status, xhr]);
@@ -96,7 +98,7 @@ var Dynojax = (function () {
         $.extend(_options, options);
 
         if (_options.animations)
-            hideComponent(component, _options.fadeOut);
+            publicAPI.hideComponent(component, _options.fadeOut);
 
         // Trigger an event `dynojax:widget-start`.
         // Useful for progress bars.
@@ -115,7 +117,7 @@ var Dynojax = (function () {
             $('.dynojax-' + component).html(data);
 
             if (_options.animations)
-                showComponent(component, _options.fadeIn);
+                publicAPI.showComponent(component, _options.fadeIn);
 
             // Trigger an event `dynojax:widget-end`.
             $(document).trigger('dynojax:widget-end', [component, page, status, xhr]);
@@ -126,14 +128,14 @@ var Dynojax = (function () {
     }
 
     // Hide current component in ms milliseconds.
-    var hideComponent = function (component, ms) {
+    publicAPI.hideComponent = function (component, ms) {
         $('.dynojax-' + component).animate({ opacity: 0 }, ms, function () {
             $(this).css('visibility', 'hidden');
         });
     }
 
     // Show the new component in ms milliseconds.
-    var showComponent = function (component, ms) {
+    publicAPI.showComponent = function (component, ms) {
         $('.dynojax-' + component).finish().css('visibility', '').animate({ opacity: 1 }, ms, function () {
             $(this).css('opacity', '');
         });
@@ -174,6 +176,9 @@ $(function () {
         if (!evt.state.component)
             return;
 
+        if (evt.state.options.animations)
+            Dynojax.hideComponent(evt.state.component, evt.state.options.fadeOut);
+
         // Trigger an event `dynojax:popstate-start`.
         $(document).trigger('dynojax:popstate-start', [evt.state.component, document.location]);
 
@@ -188,13 +193,21 @@ $(function () {
             $('.dynojax-' + evt.state.component).html(data);
 
             // Set the last scroll position of the component.
-            window.scrollTo(evt.state.scroll.x, evt.state.scroll.y);
+            if (evt.state.options.resetScroll)
+                window.scrollTo(evt.state.scroll.x, evt.state.scroll.y);
+
+            if (evt.state.options.animations)
+                Dynojax.showComponent(evt.state.component, evt.state.options.fadeIn);
 
             // Trigger an event `dynojax:popstate-end`.
             $(document).trigger('dynojax:popstate-end', [evt.state.component, document.location]);
         }).fail(function (xhr, status) {
             // Trigger an event `dynojax:error`.
             $(document).trigger('dynojax:error', [evt.state.component, document.location, status, xhr]);
+
+            // Reload the page if got error response.
+            if (evt.state.options.reloadOnError)
+                window.location.href = document.location;
         });
     }
 });
