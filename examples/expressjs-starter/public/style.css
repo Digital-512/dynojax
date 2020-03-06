@@ -32,8 +32,16 @@ footer > .content {
 .content > p {
     line-height: 30px;
 }
-.content > img {
-    width: 400px;
+.content > figure {
+    max-width: 400px;
+    margin: 30px 0;
+}
+.content > figure img {
+    width: 100%;
+}
+.content > figure figcaption {
+    color: #65617d;
+    font-style: italic;
 }
 .content > div {
     margin: 15px 0;
