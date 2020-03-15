@@ -1,6 +1,8 @@
 # dynojax
 Dynojax is a jQuery plugin that uses AJAX and pushState to deliver a fast browsing experience with real permalinks, page titles and working back/forward buttons.
 
+> :warning: <b>DEPRECATED! </b> jQuery version of Dynojax is no longer supported or updated. Please look at [master](https://github.com/Digital-512/dynojax) branch to download the latest, VanillaJS version of this plugin.
+
 Dynojax works by fetching HTML from your server via AJAX and replacing the content of a container element on your page with the loaded HTML. It then updates the current URL in the browser using pushState. This results in faster page navigation for two reasons:
 
 * No page resources (JS, CSS) get re-executed or re-applied;
