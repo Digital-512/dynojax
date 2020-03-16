@@ -80,7 +80,7 @@ Dynojax.loadWidget(component, page, [options]);
 You can check if the browser supports Dynojax with supportDynojax (bool).
 
 ```js
-if(Dynojax.supportDynojax) {
+if (Dynojax.supportDynojax) {
   // do something here...
 }
 ```
@@ -95,7 +95,7 @@ Dynojax.supportDynojax = false;
 The whole point of Dynojax is that it fetches and inserts new content _without_ refreshing the page. However, other jQuery plugins or libraries that are set to react on page loaded event (such as `DOMContentLoaded`) will not pick up on these changes. Therefore, it's usually a good idea to configure these plugins to reinitialize in the scope of the updated page content. This can be done like so:
 
 ```js
-$(document).on('ready dynojax:end dynojax:popstate-end', function(event) {
+$(document).on('ready dynojax:end dynojax:popstate-end', function (event) {
   $(event.target).initializeMyPlugin();
 });
 ```
@@ -204,10 +204,10 @@ $(document).on('dynojax:end', function () {
 });
 
 // VanillaJS
-document.addEventListener('dynojax:start', function() {
+document.addEventListener('dynojax:start', function () {
   NProgress.start();
 });
-document.addEventListener('dynojax:end', function() {
+document.addEventListener('dynojax:end', function () {
   NProgress.done();
 });
 ```
