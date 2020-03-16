@@ -14,7 +14,7 @@ Dynojax depends on jQuery 1.8 or higher.
 
 Add `dynojax.min.js` to your project.
 ```html
-<script src="https://digital-512.github.io/dynojax/dynojax.min.js"></script>
+<script src="dynojax.min.js"></script>
 ```
 
 ## Usage
