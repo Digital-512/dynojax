@@ -1,14 +1,14 @@
 # dynojax
-Dynojax is a jQuery plugin that uses AJAX and pushState to deliver a fast browsing experience with real permalinks, page titles and working back/forward buttons.
+Dynojax uses Fetch and pushState to deliver a fast browsing experience with real permalinks, page titles and working back/forward buttons.
 
-Dynojax works by fetching HTML from your server via AJAX and replacing the content of a container element on your page with the loaded HTML. It then updates the current URL in the browser using pushState. This results in faster page navigation for two reasons:
+Dynojax works by fetching HTML from your server via [Fetch](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API) and replacing the content of a container element on your page with the loaded HTML. It then updates the current URL in the browser using pushState. This results in faster page navigation for two reasons:
 
 * No page resources (JS, CSS) get re-executed or re-applied;
 * If the server is configured for Dynojax, it can render only partial page contents and avoid the potentially costly full layout render.
 
 ## Installation
 
-Dynojax depends on jQuery 1.8 or higher.
+Dynojax does not have any dependencies.
 
 Add `dynojax.min.js` to your project.
 ```html
@@ -22,12 +22,12 @@ The simplest and the most common use of Dynojax looks like this:
 
 ```html
 <a href="/page2" data-dynojax="container">Go to page 2</a>
-<div class="dynojax-container"></div>
+<div id="dynojax-container"></div>
 ```
 
-This will load the content of "/page2" into a container `.dynojax-container` on link click.
+This will load the content of "/page2" into a container `#dynojax-container` on link click.
 
-In this example `container` means the container, into which the page should be loaded. It can be named differently (for example, `class="dynojax-main"`, then the link will use attribute `data-dynojax="main"`). Having multiple containers (components) is also supported.
+In this example `container` means the container, into which the page should be loaded. It can be named differently (for example, `id="dynojax-main"`, then the link will use attribute `data-dynojax="main"`). Having multiple containers (components) is also supported.
 
 > <b>NOTE: </b>It will not load anything to the container on the first page load. This is the server's responsibility to load the initial page. See `examples/expressjs-starter` for an example which shows how to use EJS templating engine to load pages from the server.
 
@@ -35,12 +35,12 @@ In this example `container` means the container, into which the page should be l
 You can also load a component as widget wihout using pushState function. It allows to load or update any part of the page without reloading it. There is an example:
 
 ```html
-<div class="dynojax-widget"></div>
+<div id="dynojax-widget"></div>
 <button onclick="reload()">Reload online users!</button>
 ```
 ```js
 function reload() {
-  // load online users into `.dynojax-widget`
+  // load online users into `#dynojax-widget`
   Dynojax.loadWidget('widget','/modules/online_users');
 }
 ```
@@ -114,10 +114,10 @@ For `Dynojax.load()`
 var _options = {
   title: undefined, // Overrides a title sent from the server
   resetScroll: true, // Should we reset the scroll to its initial position on switching page?
-  reloadOnError: true, // Should we hard reload the page if AJAX request fails?
+  reloadOnError: true, // Should we hard reload the page if Fetch response returns ok status as false?
   animations: true, // Should we see animations while switching pages?
-  fadeIn: 'fast', // The time in milliseconds, 'fast' or 'slow'. How long the fadeIn animation should take?
-  fadeOut: 'fast' // The time in milliseconds, 'fast' or 'slow'. How long the fadeOut animation should take?
+  fadeIn: 200, // The time in milliseconds. How long the fadeIn animation should take?
+  fadeOut: 200 // The time in milliseconds. How long the fadeOut animation should take?
 }
 ```
 
@@ -126,8 +126,8 @@ For `Dynojax.loadWidget()`
 ```js
 var _options = {
   animations: true, // Should we see animations while reloading widgets?
-  fadeIn: 'fast', // The time in milliseconds, 'fast' or 'slow'. How long the fadeIn animation should take?
-  fadeOut: 'fast' // The time in milliseconds, 'fast' or 'slow'. How long the fadeOut animation should take?
+  fadeIn: 200, // The time in milliseconds. How long the fadeIn animation should take?
+  fadeOut: 200 // The time in milliseconds. How long the fadeOut animation should take?
 }
 ```
 
@@ -152,7 +152,7 @@ Useful if you want to integrate progress bars, for example, [NProgress](https://
     <td><code>dynojax:end</code></td>
     <td>Ends to load a component</td>
     <td>With pushState</td>
-    <td>[component, page, status, xhr]</td>
+    <td>[component, page, status]</td>
   </tr>
   <tr>
     <td><code>dynojax:widget-start</code></td>
@@ -164,7 +164,7 @@ Useful if you want to integrate progress bars, for example, [NProgress](https://
     <td><code>dynojax:widget-end</code></td>
     <td>Ends to load a widget</td>
     <td>Without pushState</td>
-    <td>[component, page, status, xhr]</td>
+    <td>[component, page, status]</td>
   </tr>
   <tr>
     <td><code>dynojax:popstate-start</code></td>
@@ -176,23 +176,38 @@ Useful if you want to integrate progress bars, for example, [NProgress](https://
     <td><code>dynojax:popstate-end</code></td>
     <td>Ends to load a component</td>
     <td>Back/Forward</td>
-    <td>[component, page]</td>
+    <td>[component, page, status]</td>
+  </tr>
+  <tr>
+    <td><code>dynojax:response-fail</code></td>
+    <td>Fetch got response ok status as false (HTTP 404 or 500).</td>
+    <td>All</td>
+    <td>[component, page, status, statusText]</td>
   </tr>
   <tr>
     <td><code>dynojax:error</code></td>
-    <td>AJAX error occurred or got error response.</td>
+    <td>Fetch error occurred (connection failed).</td>
     <td>All</td>
-    <td>[component, page, status, xhr]</td>
+    <td>[component, page, error]</td>
   </tr>
 </table>
 
 An example for integrating with NProgress:
 
 ```js
+// jQuery
 $(document).on('dynojax:start', function () {
   NProgress.start();
 });
 $(document).on('dynojax:end', function () {
+  NProgress.done();
+});
+
+// VanillaJS
+document.addEventListener('dynojax:start', function() {
+  NProgress.start();
+});
+document.addEventListener('dynojax:end', function() {
   NProgress.done();
 });
 ```
