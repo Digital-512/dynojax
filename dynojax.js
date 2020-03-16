@@ -1,4 +1,4 @@
-"use strict"
+"use strict";
 
 var Dynojax = (function () {
     var publicAPI = {}
@@ -9,12 +9,12 @@ var Dynojax = (function () {
             resetScroll: true,
             reloadOnError: true,
             animations: true,
-            fadeIn: 'fast',
-            fadeOut: 'fast'
+            fadeIn: 200,
+            fadeOut: 200
         }
 
         // Merge options into default options
-        $.extend(_options, options);
+        Object.assign(_options, options);
 
         // Change location if Dynojax is unsupported.
         if (!publicAPI.supportDynojax) {
@@ -33,56 +33,48 @@ var Dynojax = (function () {
         }, document.title);
 
         if (_options.animations)
-            publicAPI.hideComponent(component, _options.fadeOut);
+            publicAPI.hideElement(document.getElementById('dynojax-' + component), _options.fadeOut);
 
         // Trigger an event `dynojax:start`.
         // Useful for progress bars.
-        $(document).trigger('dynojax:start', [component, page]);
+        document.dispatchEvent(new CustomEvent('dynojax:start', {
+            component: component,
+            page: page
+        }));
 
-        // Send GET request to server.
-        // Sends a header `X-DYNOJAX-RENDER` to the server, so
-        // the server knows if a component is requested.
-        $.ajax({
-            method: 'GET',
-            cache: false,
-            headers: { 'X-DYNOJAX-RENDER': true },
-            url: page
-        }).done(function (data, status, xhr) {
-            // Include component's data to its container.
-            $('.dynojax-' + component).html(data);
+        publicAPI.fetchComponent(component, page, _options).then(function (response) {
+            // Check if no errors occurred.
+            if (response.ok) {
+                // Include component's data to its container.
+                document.getElementById('dynojax-' + component).innerHTML = response.data;
 
-            // Get the title of a component from the server.
-            var title = _options.title || xhr.getResponseHeader('X-DYNOJAX-TITLE');
+                // Create a new history state for opened component.
+                history.pushState({
+                    component: component,
+                    options: _options,
+                    scroll: {
+                        x: 0,
+                        y: 0
+                    }
+                }, response.title, page);
 
-            // Create a new history state for opened component.
-            history.pushState({
-                component: component,
-                options: _options,
-                scroll: {
-                    x: 0,
-                    y: 0
-                }
-            }, title, page);
+                // Set title for the document.
+                document.title = response.title;
 
-            // Set title for the document.
-            document.title = title;
+                // Reset scroll position.
+                if (_options.resetScroll)
+                    window.scrollTo(0, 0);
 
-            // Reset scroll position.
-            if (_options.resetScroll)
-                window.scrollTo(0, 0);
-
-            if (_options.animations)
-                publicAPI.showComponent(component, _options.fadeIn);
+                if (_options.animations)
+                    publicAPI.showElement(document.getElementById('dynojax-' + component), _options.fadeIn);
+            }
 
             // Trigger an event `dynojax:end`.
-            $(document).trigger('dynojax:end', [component, page, status, xhr]);
-        }).fail(function (xhr, status) {
-            // Trigger an event `dynojax:error`.
-            $(document).trigger('dynojax:error', [component, page, status, xhr]);
-
-            // Reload the page if got error response.
-            if (_options.reloadOnError)
-                window.location.href = page;
+            document.dispatchEvent(new CustomEvent('dynojax:end', {
+                component: component,
+                page: page,
+                status: response.status
+            }));
         });
     }
 
@@ -90,55 +82,124 @@ var Dynojax = (function () {
         // Default values for options
         var _options = {
             animations: true,
-            fadeIn: 'fast',
-            fadeOut: 'fast'
+            fadeIn: 200,
+            fadeOut: 200
         }
 
         // Merge options into default options
-        $.extend(_options, options);
+        Object.assign(_options, options);
 
         if (_options.animations)
-            publicAPI.hideComponent(component, _options.fadeOut);
+            publicAPI.hideElement(document.getElementById('dynojax-' + component), _options.fadeOut);
 
         // Trigger an event `dynojax:widget-start`.
         // Useful for progress bars.
-        $(document).trigger('dynojax:widget-start', [component, page]);
+        document.dispatchEvent(new CustomEvent('dynojax:widget-start', {
+            component: component,
+            page: page
+        }));
 
-        // Send GET request to server.
-        // Sends a header `X-DYNOJAX-RENDER` to the server, so
-        // the server knows if a component is requested.
-        $.ajax({
-            method: 'GET',
-            cache: false,
-            headers: { 'X-DYNOJAX-RENDER': true },
-            url: page
-        }).done(function (data) {
-            // Include component's data to its container.
-            $('.dynojax-' + component).html(data);
+        publicAPI.fetchComponent(component, page, _options).then(function (response) {
+            // Check if no errors occurred.
+            if (response.ok) {
+                // Include component's data to its container.
+                document.getElementById('dynojax-' + component).innerHTML = response.data;
 
-            if (_options.animations)
-                publicAPI.showComponent(component, _options.fadeIn);
+                if (_options.animations)
+                    publicAPI.showElement(document.getElementById('dynojax-' + component), _options.fadeIn);
+            }
 
             // Trigger an event `dynojax:widget-end`.
-            $(document).trigger('dynojax:widget-end', [component, page, status, xhr]);
-        }).fail(function (xhr, status) {
-            // Trigger an event `dynojax:error`.
-            $(document).trigger('dynojax:error', [component, page, status, xhr]);
+            document.dispatchEvent(new CustomEvent('dynojax:widget-end', {
+                component: component,
+                page: page,
+                status: response.status
+            }));
         });
+    }
+
+    publicAPI.fetchComponent = async function (component, page, options) {
+        var fetchStatus = true;
+
+        try {
+            // Send GET request to server.
+            // Sends a header `X-DYNOJAX-RENDER` to the server, so
+            // the server knows if a component is requested.
+            var response = await fetch(page, {
+                method: 'GET',
+                mode: 'same-origin',
+                cache: 'no-store', // temporary solution to prevent bugs
+                headers: { 'X-DYNOJAX-RENDER': true }
+            });
+
+            // Something went wrong?
+            if (!response.ok) {
+                // Trigger an event `dynojax:response-fail`.
+                document.dispatchEvent(new CustomEvent('dynojax:response-fail', {
+                    component: component,
+                    page: page,
+                    status: response.status,
+                    statusText: response.statusText
+                }));
+
+                // Reload the page if got error response.
+                if (options.reloadOnError) {
+                    window.location.href = page;
+                    return;
+                }
+            }
+
+            // Get response HTML.
+            var html = await response.text();
+        } catch (error) {
+            // Failed to get response.
+            fetchStatus = false;
+
+            // Trigger an event `dynojax:error`.
+            document.dispatchEvent(new CustomEvent('dynojax:error', {
+                component: component,
+                page: page,
+                error: error
+            }));
+        } finally {
+            // ok -> returns `false` if fails to get response.
+            // data -> HTML from the server.
+            // title -> The title of a component from the server or overriden by client.
+            // status -> An integer containing the response status code.
+            return {
+                ok: fetchStatus,
+                data: html,
+                title: options.title || response.headers.get('X-DYNOJAX-TITLE'),
+                status: response.status
+            }
+        }
     }
 
     // Hide current component in ms milliseconds.
-    publicAPI.hideComponent = function (component, ms) {
-        $('.dynojax-' + component).animate({ opacity: 0 }, ms, function () {
-            $(this).css('visibility', 'hidden');
-        });
+    publicAPI.hideElement = function (element, ms) {
+        clearTimeout(element.animationTimeout);
+        var s = element.style;
+        s.opacity = 0;
+        s.transition = 'opacity ' + ms / 1000 + 's';
+        element.animationTimeout = setTimeout(function () {
+            s.removeProperty('transition');
+            s.visibility = 'hidden';
+        }, ms);
     }
 
     // Show the new component in ms milliseconds.
-    publicAPI.showComponent = function (component, ms) {
-        $('.dynojax-' + component).finish().css('visibility', '').animate({ opacity: 1 }, ms, function () {
-            $(this).css('opacity', '');
-        });
+    publicAPI.showElement = function (element, ms) {
+        clearTimeout(element.animationTimeout);
+        var s = element.style;
+        s.removeProperty('visibility');
+        s.removeProperty('transition');
+        element.offsetHeight; // trigger reflow
+        s.transition = 'opacity ' + ms / 1000 + 's';
+        s.opacity = 1;
+        element.animationTimeout = setTimeout(function () {
+            s.removeProperty('opacity');
+            s.removeProperty('transition');
+        }, ms);
     }
 
     // Is Dynojax supported by this browser?
@@ -149,16 +210,16 @@ var Dynojax = (function () {
     return publicAPI;
 })();
 
-$(function () {
-    // Add a click event for all links with attribute `data-dynojax`.
-    $('body').on('click', 'a[data-dynojax]', function (evt) {
+// Add a click event for all links with attribute `data-dynojax`.
+document.addEventListener('click', function (evt) {
+    if (evt.target.tagName === 'A' && evt.target.dataset.dynojax) {
         // Middle click, cmd click and ctrl click should open
         // in a new tab as normal.
         if (evt.which > 1 || evt.metaKey || evt.ctrlKey || evt.shiftKey || evt.altKey)
             return;
 
         // Ignore event with default prevented.
-        if (evt.isDefaultPrevented())
+        if (evt.defaultPrevented)
             return;
 
         // Ignore if Dynojax is unsupported.
@@ -167,47 +228,44 @@ $(function () {
 
         // Prevent default behaviour and load component.
         evt.preventDefault();
-        Dynojax.load($(this).data('dynojax'), $(this).attr('href'));
-    });
+        Dynojax.load(evt.target.dataset.dynojax, evt.target.href);
+    }
+});
 
-    // Support for back/forward actions.
-    window.onpopstate = function (evt) {
-        // Check if a component was loaded.
-        if (!evt.state.component)
-            return;
+// Support for back/forward actions.
+window.onpopstate = function (evt) {
+    // Check if a component was loaded.
+    if (!evt.state.component)
+        return;
 
-        if (evt.state.options.animations)
-            Dynojax.hideComponent(evt.state.component, evt.state.options.fadeOut);
+    if (evt.state.options.animations)
+        Dynojax.hideElement(document.getElementById('dynojax-' + evt.state.component), evt.state.options.fadeOut);
 
-        // Trigger an event `dynojax:popstate-start`.
-        $(document).trigger('dynojax:popstate-start', [evt.state.component, document.location]);
+    // Trigger an event `dynojax:popstate-start`.
+    document.dispatchEvent(new CustomEvent('dynojax:popstate-start', {
+        component: evt.state.component,
+        page: document.location
+    }));
 
-        // Send GET request to server.
-        $.ajax({
-            method: 'GET',
-            cache: false,
-            headers: { 'X-DYNOJAX-RENDER': true },
-            url: document.location
-        }).done(function (data) {
+    Dynojax.fetchComponent(evt.state.component, document.location, evt.state.options).then(function (response) {
+        // Check if no errors occurred.
+        if (response.ok) {
             // Include component's data to its container.
-            $('.dynojax-' + evt.state.component).html(data);
+            document.getElementById('dynojax-' + evt.state.component).innerHTML = response.data;
 
             // Set the last scroll position of the component.
             if (evt.state.options.resetScroll)
                 window.scrollTo(evt.state.scroll.x, evt.state.scroll.y);
 
             if (evt.state.options.animations)
-                Dynojax.showComponent(evt.state.component, evt.state.options.fadeIn);
+                Dynojax.showElement(document.getElementById('dynojax-' + evt.state.component), evt.state.options.fadeIn);
+        }
 
-            // Trigger an event `dynojax:popstate-end`.
-            $(document).trigger('dynojax:popstate-end', [evt.state.component, document.location]);
-        }).fail(function (xhr, status) {
-            // Trigger an event `dynojax:error`.
-            $(document).trigger('dynojax:error', [evt.state.component, document.location, status, xhr]);
-
-            // Reload the page if got error response.
-            if (evt.state.options.reloadOnError)
-                window.location.href = document.location;
-        });
-    }
-});
+        // Trigger an event `dynojax:popstate-end`.
+        document.dispatchEvent(new CustomEvent('dynojax:popstate-end', {
+            component: evt.state.component,
+            page: document.location,
+            status: response.status
+        }));
+    });
+}

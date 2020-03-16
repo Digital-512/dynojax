@@ -9,9 +9,6 @@
 
     <title>Home | Dynojax Example Starter</title>
 
-    <!-- jQuery is required -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
-
     <!-- There is the main Dynojax script -->
     <script src="https://digital-512.github.io/dynojax/dynojax.min.js"></script>
 
@@ -37,8 +34,8 @@
     </footer>
     <script>
         // NProgress integration
-        $(document).on('dynojax:start', function () { NProgress.start(); });
-        $(document).on('dynojax:end', function () { NProgress.done(); });
+        document.addEventListener('dynojax:start', function () { NProgress.start(); });
+        document.addEventListener('dynojax:end', function () { NProgress.done(); });
     </script>
 </body>
 
