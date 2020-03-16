@@ -46,7 +46,7 @@ var Dynojax = (function () {
             // Check if no errors occurred.
             if (response.ok) {
                 // Include component's data to its container.
-                document.getElementById('dynojax-' + component).innerHTML = response.data;
+                publicAPI.renderHtml(component, response.data);
 
                 // Create a new history state for opened component.
                 history.pushState({
@@ -103,7 +103,7 @@ var Dynojax = (function () {
             // Check if no errors occurred.
             if (response.ok) {
                 // Include component's data to its container.
-                document.getElementById('dynojax-' + component).innerHTML = response.data;
+                publicAPI.renderHtml(component, response.data);
 
                 if (_options.animations)
                     publicAPI.showElement(document.getElementById('dynojax-' + component), _options.fadeIn);
@@ -202,6 +202,12 @@ var Dynojax = (function () {
         }, ms);
     }
 
+    // Renders the component to HTML.
+    // Can be overridden to use with frameworks such as Reef.
+    publicAPI.renderHtml = function (element, content) {
+        document.getElementById('dynojax-' + element).innerHTML = content;
+    }
+
     // Is Dynojax supported by this browser?
     publicAPI.supportDynojax = window.history && window.history.pushState &&
         // pushState isn't reliable on iOS until 5.
@@ -251,7 +257,7 @@ window.onpopstate = function (evt) {
         // Check if no errors occurred.
         if (response.ok) {
             // Include component's data to its container.
-            document.getElementById('dynojax-' + evt.state.component).innerHTML = response.data;
+            Dynojax.renderHtml(evt.state.component, response.data);
 
             // Set the last scroll position of the component.
             if (evt.state.options.resetScroll)
