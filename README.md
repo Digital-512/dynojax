@@ -104,7 +104,7 @@ var app = new Reef('#dynojax-container', {
     },
     allowHTML: true
 });
-// element -> component name, e.g. `component`.
+// element -> component name, e.g. `container`.
 // content -> HTML content from the server.
 // headers -> HTTP headers from the server.
 Dynojax.renderHtml = function (element, content, headers) {
