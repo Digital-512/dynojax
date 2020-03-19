@@ -46,7 +46,9 @@ var Dynojax = (function () {
             // Check if no errors occurred.
             if (response.ok) {
                 // Include component's data to its container.
-                publicAPI.renderHtml(component, response.data);
+                publicAPI.renderHtml(component, response.data, response.headers);
+
+                var title = _options.title || response.headers.get('X-DYNOJAX-TITLE');
 
                 // Create a new history state for opened component.
                 history.pushState({
@@ -56,10 +58,10 @@ var Dynojax = (function () {
                         x: 0,
                         y: 0
                     }
-                }, response.title, page);
+                }, title, page);
 
                 // Set title for the document.
-                document.title = response.title;
+                document.title = title;
 
                 // Reset scroll position.
                 if (_options.resetScroll)
@@ -103,7 +105,7 @@ var Dynojax = (function () {
             // Check if no errors occurred.
             if (response.ok) {
                 // Include component's data to its container.
-                publicAPI.renderHtml(component, response.data);
+                publicAPI.renderHtml(component, response.data, response.headers);
 
                 if (_options.animations)
                     publicAPI.showElement(document.getElementById('dynojax-' + component), _options.fadeIn);
@@ -164,12 +166,12 @@ var Dynojax = (function () {
         } finally {
             // ok -> returns `false` if fails to get response.
             // data -> HTML from the server.
-            // title -> The title of a component from the server or overriden by client.
+            // headers -> HTTP headers from the server.
             // status -> An integer containing the response status code.
             return {
                 ok: fetchStatus,
                 data: html,
-                title: options.title || response.headers.get('X-DYNOJAX-TITLE'),
+                headers: response.headers,
                 status: response.status
             }
         }
@@ -257,7 +259,7 @@ window.onpopstate = function (evt) {
         // Check if no errors occurred.
         if (response.ok) {
             // Include component's data to its container.
-            Dynojax.renderHtml(evt.state.component, response.data);
+            Dynojax.renderHtml(evt.state.component, response.data, response.headers);
 
             // Set the last scroll position of the component.
             if (evt.state.options.resetScroll)
