@@ -40,8 +40,8 @@ You can also load a component as widget wihout using pushState function. It allo
 ```
 ```js
 function reload() {
-  // load online users into `#dynojax-widget`
-  Dynojax.loadWidget('widget','/modules/online_users');
+    // load online users into `#dynojax-widget`
+    Dynojax.loadWidget('widget','/modules/online_users');
 }
 ```
 
@@ -81,7 +81,7 @@ You can check if the browser supports Dynojax with supportDynojax (bool).
 
 ```js
 if (Dynojax.supportDynojax) {
-  // do something here...
+    // do something here...
 }
 ```
 
@@ -96,16 +96,19 @@ You can override renderHtml function to make custom behaviour for setting HTML c
 
 ```js
 var app = new Reef('#dynojax-container', {
-  data: {
-    html: null
-  },
-  template: function (props) {
-    return props.html;
-  },
-  allowHTML: true
+    data: {
+        html: null
+    },
+    template: function (props) {
+        return props.html;
+    },
+    allowHTML: true
 });
-Dynojax.renderHtml = function (element, content) {
-  app.setData({ html: content });
+// element -> component name, e.g. `component`.
+// content -> HTML content from the server.
+// headers -> HTTP headers from the server.
+Dynojax.renderHtml = function (element, content, headers) {
+    app.setData({ html: content });
 }
 ```
 
@@ -114,7 +117,7 @@ The whole point of Dynojax is that it fetches and inserts new content _without_ 
 
 ```js
 $(document).on('ready dynojax:end dynojax:popstate-end', function (event) {
-  $(event.target).initializeMyPlugin();
+    $(event.target).initializeMyPlugin();
 });
 ```
 
@@ -130,12 +133,12 @@ For `Dynojax.load()`
 
 ```js
 var _options = {
-  title: undefined, // Overrides a title sent from the server
-  resetScroll: true, // Should we reset the scroll to its initial position on switching page?
-  reloadOnError: true, // Should we hard reload the page if Fetch response returns ok status as false?
-  animations: true, // Should we see animations while switching pages?
-  fadeIn: 200, // The time in milliseconds. How long the fadeIn animation should take?
-  fadeOut: 200 // The time in milliseconds. How long the fadeOut animation should take?
+    title: undefined, // Overrides a title sent from the server
+    resetScroll: true, // Should we reset the scroll to its initial position on switching page?
+    reloadOnError: true, // Should we hard reload the page if Fetch response returns ok status as false?
+    animations: true, // Should we see animations while switching pages?
+    fadeIn: 200, // The time in milliseconds. How long the fadeIn animation should take?
+    fadeOut: 200 // The time in milliseconds. How long the fadeOut animation should take?
 }
 ```
 
@@ -143,9 +146,9 @@ For `Dynojax.loadWidget()`
 
 ```js
 var _options = {
-  animations: true, // Should we see animations while reloading widgets?
-  fadeIn: 200, // The time in milliseconds. How long the fadeIn animation should take?
-  fadeOut: 200 // The time in milliseconds. How long the fadeOut animation should take?
+    animations: true, // Should we see animations while reloading widgets?
+    fadeIn: 200, // The time in milliseconds. How long the fadeIn animation should take?
+    fadeOut: 200 // The time in milliseconds. How long the fadeOut animation should take?
 }
 ```
 
@@ -215,17 +218,17 @@ An example for integrating with NProgress:
 ```js
 // jQuery
 $(document).on('dynojax:start', function () {
-  NProgress.start();
+    NProgress.start();
 });
 $(document).on('dynojax:end', function () {
-  NProgress.done();
+    NProgress.done();
 });
 
 // VanillaJS
 document.addEventListener('dynojax:start', function () {
-  NProgress.start();
+    NProgress.start();
 });
 document.addEventListener('dynojax:end', function () {
-  NProgress.done();
+    NProgress.done();
 });
 ```
